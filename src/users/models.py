@@ -1,31 +1,23 @@
-from sqlalchemy import String, func
+from datetime import date, datetime
+from enum import Enum
+
+from sqlalchemy import DateTime, String, func
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from enum import Enum
-from typing import Annotated
-from datetime import date, datetime
-
-from db.database import Base
+from src.database import Base
+from src.utils.model_constants import int_pk, str_30
 
 
-str_30 = Annotated[str, mapped_column(String(30), nullable=False)]
-
-
-# Done
 class UserRole(str, Enum):
     admin = "admin"
-    director = "director"
-    vice_director = "vice_director"
-    teacher = "teacher"
-    student = "student"
+    staff = "staff"
+    guest = "guest"
 
-
-# Done
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int_pk]
 
     username: Mapped[str] = mapped_column(String(20), unique=True, index=True, nullable=False)
     first_name: Mapped[str_30]
@@ -38,13 +30,11 @@ class User(Base):
     phone_number: Mapped[str_30]
     password_hash: Mapped[str] = mapped_column(nullable=False)
 
-    role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole), index=True, nullable=False)
+    role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole), index=True, nullable=False, default=UserRole.guest)
 
-    is_active: Mapped[bool] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
 
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-
-    student_profile = relationship("Student", back_populates="user", uselist=False)
-    teacher_profile = relationship("Teacher", back_populates="user", uselist=False)
+    reservations: Mapped[list["Reservation"]] = relationship(back_populates="owner") # type: ignore
