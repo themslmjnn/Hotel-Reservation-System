@@ -6,10 +6,6 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 # import all models so Alembic can see them
-import src.users.models
-import src.reservations.models
-import src.rooms.models
-
 from alembic import context
 from src.core.config import settings
 

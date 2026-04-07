@@ -1,0 +1,5 @@
+MESSAGE_404_USER = "User not found"
+MESSAGE_403_INACTIVE = "Inactive user" 
+MESSAGE_401_UNAUTHORIZED = "Could not validate credentials"
+MESSAGE_TOKEN_ERR = "Invalid or expired token"
+MESSAGE_403 = "Accessing denied"
