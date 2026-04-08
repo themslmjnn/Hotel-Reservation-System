@@ -7,13 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.security import decode_access_token
 from src.database import AsyncSessionLocal
 from src.users.models import User, UserRole
-from src.users.repositories import UserRepository
+from users.repository import UserRepository
 from src.utils.exception_constants import (
     MESSAGE_401_UNAUTHORIZED,
     MESSAGE_403,
     MESSAGE_403_INACTIVE,
     MESSAGE_404_USER,
 )
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -25,9 +26,9 @@ async_db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
 
 async def get_current_user(
-        db: async_db_dependency,
-        token: str = Depends(oauth2_scheme)
-    ) -> User:
+    db: async_db_dependency,
+    token: str = Depends(oauth2_scheme)
+) -> User:
 
     try:
         payload = decode_access_token(token)
@@ -49,6 +50,7 @@ async def get_current_user(
 
 current_user_dependency = Annotated[User, Depends(get_current_user)]
 
+
 def require_roles(*roles: UserRole):
     def guard(current_user: current_user_dependency) -> User:
         if current_user.role not in roles:
@@ -56,5 +58,6 @@ def require_roles(*roles: UserRole):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=MESSAGE_403,
             )
+        
         return current_user
     return guard
