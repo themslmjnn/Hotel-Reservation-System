@@ -1,12 +1,13 @@
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 
-from sqlalchemy import DateTime, ForeignKey, func
+from sqlalchemy import DateTime, ForeignKey, Numeric, func
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import Base
-from src.utils.model_constants import int_pk
+from src.utils.model_constants import int_pk, created_at, updated_at
 
 
 class ReservationStatus(str, Enum):
@@ -15,6 +16,7 @@ class ReservationStatus(str, Enum):
     checked_in = "checked_in"
     checked_out = "checked_out"
     cancelled = "cancelled"
+    deferred = "deferred"
 
 class Reservation(Base):
     __tablename__ = "reservations"
@@ -27,12 +29,34 @@ class Reservation(Base):
 
     status: Mapped[ReservationStatus] = mapped_column(SQLEnum(ReservationStatus), nullable=False, default=ReservationStatus.pending)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    owner: Mapped["User"] = relationship(back_populates="reservations") # type: ignore
-    reservation_rooms: Mapped[list["ReservationRoom"]] = relationship(back_populates="reservation", cascade="all, delete-orphan")
-    rooms: Mapped[list["Room"]] = relationship(secondary="reservation_rooms",viewonly=True) # type: ignore
+    created_at: Mapped[created_at]
+    updated_at: Mapped[updated_at]
+
+    owner: Mapped["User"] = relationship(
+        back_populates="reservations"
+    )
+
+    reservation_rooms: Mapped[list["ReservationRoom"]] = relationship(
+        back_populates="reservation", 
+        cascade="all, delete-orphan"
+    )
+
+    rooms: Mapped[list["Room"]] = relationship(
+        secondary="reservation_rooms",
+        viewonly=True
+    )
+
+    reservation_services: Mapped[list["ReservationService"]] = relationship(
+        back_populates="reservation", 
+        cascade="all, delete-orphan"
+    ) 
+
+    deferred_payment: Mapped["DeferredPayment | None"] = relationship(
+        back_populates="reservation"
+    )
 
 class ReservationRoom(Base):
     __tablename__ = "reservation_rooms"
@@ -42,5 +66,10 @@ class ReservationRoom(Base):
     reservation_id: Mapped[int] = mapped_column(ForeignKey("reservations.id", ondelete="CASCADE"))
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id", ondelete="CASCADE"))
 
-    reservation: Mapped["Reservation"] = relationship(back_populates="reservation_rooms")
-    room: Mapped["Room"] = relationship(back_populates="reservation_rooms") # type: ignore
+    reservation: Mapped["Reservation"] = relationship(
+        back_populates="reservation_rooms"
+    )
+
+    room: Mapped["Room"] = relationship(
+        back_populates="reservation_rooms"
+    ) 

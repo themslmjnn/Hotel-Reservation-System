@@ -1,3 +1,4 @@
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
@@ -11,6 +12,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
@@ -30,3 +32,24 @@ def decode_access_token(token: str) -> dict:
     
     except JWTError:
         raise ValueError(MESSAGE_TOKEN_ERR)
+    
+
+def generate_invite_token() -> tuple[str, str]:
+    raw_token = secrets.token_urlsafe(32)
+    hashed_token = pwd_context.hash(raw_token)
+
+    return raw_token, hashed_token
+
+
+def verify_invite_token(raw_token: str, hashed_token: str) -> bool:
+    return pwd_context.verify(raw_token, hashed_token)
+
+
+def generate_refresh_token() -> tuple[str, str]:
+    raw_token = secrets.token_urlsafe(32)
+    hashed_token = pwd_context.hash(raw_token)
+    return raw_token, hashed_token
+
+
+def verify_refresh_token(raw_token: str, hashed_token: str) -> bool:
+    return pwd_context.verify(raw_token, hashed_token)

@@ -1,5 +1,7 @@
 from datetime import date
 
+from users.models import UserRole
+
 
 def validate_password(password: str) -> str:
     if not any(c.isupper() for c in password):
@@ -31,3 +33,10 @@ def validate_email(email: str) -> str:
         raise ValueError("Email with the following domain is not accepted")
     
     return email
+
+
+def validate_role(role: UserRole) -> UserRole:
+    if role == UserRole.system_admin:
+        raise ValueError("Cannot assign system_admin role")
+    
+    return role

@@ -9,6 +9,9 @@ MESSAGE_403_FORBIDDEN = "Accessing denied"
 
 MESSAGE_404_USER = "User(s) not found"
 
+def message_404_room(room_id: int) -> str: 
+    return f"Room with {room_id=} not found"
+
 MESSAGE_409_DUPLICATE = "Duplicate values are not accepted"
 MESSAGE_409_USERNAME = "Username already taken"
 MESSAGE_409_EMAIL = "Email already registered"

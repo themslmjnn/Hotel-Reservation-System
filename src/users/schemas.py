@@ -1,19 +1,24 @@
-from pydantic import BaseModel, Field, EmailStr, field_validator
-
-from typing import Optional
 from datetime import date, datetime
-from src.utils.schema_field_validator import validate_date_of_birth, validate_email, validate_password
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
 from src.users.models import UserRole
 from src.utils.base_schema import BaseSchema
+from src.utils.schema_field_validator import (
+    validate_date_of_birth,
+    validate_email,
+    validate_password,
+    validate_role,
+)
 
 
-class UserBase(BaseModel):
-    username: str = Field(min_length=6, max_length=20)
+class CreateUserBase(BaseModel):
+    username: str | None = Field(min_length=6, max_length=20, default=None)
     first_name: str = Field(min_length=2, max_length=20)
     last_name: str = Field(min_length=2, max_length=20)
     date_of_birth: date
-    address: str | None = Field(max_length=100, default=None)
     email: EmailStr
+    phone_number: str = Field(min_length=10, max_length=20)
 
     @field_validator("date_of_birth")
     @classmethod
@@ -25,36 +30,50 @@ class UserBase(BaseModel):
     def valdiate_email(cls, field: str) -> str:
         return validate_email(field)
 
-
-class UserCreateAdmin(UserBase):
-    password: str = Field(min_length=8)
+class CreateUserAdmin(CreateUserBase):
     role: UserRole
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, field: UserRole) -> UserRole:
+        return validate_role(field)
+
+class CreateUserStaff(CreateUserBase):
+    pass
+
+class CreateUserGuest(CreateUserBase):
+    password: str
 
     @field_validator("password")
     @classmethod
     def validate_password_strength(cls, field: str) -> str:
         return validate_password(field)
+    
 
-
-class UserResponseAdmin(UserBase, BaseSchema):
+class UserResponseBase(BaseSchema):
     id: int
+    username: str | None = None
+    first_name: str
+    last_name: str
+    date_of_birth: date
+    email: EmailStr
+    phone_number: str
+    created_at: datetime
+    updated_at: datetime
+
+class UserResponseAdmin(UserResponseBase):
     role: UserRole
     is_active: bool
-    created_at: datetime
-
-
-class UserResponsePublic(UserBase, BaseSchema):
-    id: int
-    created_at: datetime
+    created_by: int | None = None
 
 
 class UserUpdateBase(BaseModel):
     username: str | None = Field(min_length=6, max_length=20, default=None)
     first_name: str | None = Field(min_length=2, max_length=20, default=None)
     last_name: str | None = Field(min_length=2, max_length=20, default=None)
-    date_of_birth: Optional[date] = None
-    address: str | None = Field(max_length=100, default=None)
+    date_of_birth: date | None = None
     email: EmailStr | None = None
+    phone_number: str | None = Field(min_length=10, max_length=20, default=None)
 
     @field_validator("date_of_birth")
     @classmethod
@@ -63,30 +82,15 @@ class UserUpdateBase(BaseModel):
     
     @field_validator("email")
     @classmethod
-    def valdiate_email(cls, field: str) -> str:
+    def validate_email(cls, field: str) -> str:
         return validate_email(field)
 
-
 class UserUpdateAdmin(UserUpdateBase):
-    role: Optional[UserRole] = None
-    is_active: Optional[bool] = None
-
-
-class UserUpdateResponseAdmin(UserBase, BaseSchema):
-    id: int
-    role: UserRole
-    is_active: bool
-    updated_at: datetime
-
+    role: UserRole | None = None
+    is_active: bool | None = None
 
 class UserUpdatePublic(UserUpdateBase):
     pass
-
-
-class UserUpdateResponsePublic(UserBase, BaseSchema):
-    id: int
-    updated_at: datetime
-
 
 class UserUpdatePasswordAdmin(BaseModel):
     new_password: str = Field(min_length=8)
@@ -96,7 +100,6 @@ class UserUpdatePasswordAdmin(BaseModel):
     def validate_password_strength(cls, field: str) -> str:
         return validate_password(field)
     
-
 class UserUpdatePasswordPublic(BaseModel):
     old_password: str
     new_password: str = Field(min_length=8)
@@ -107,10 +110,17 @@ class UserUpdatePasswordPublic(BaseModel):
         return validate_password(field)
 
 
-class UserSearch(BaseModel):
+class UserSearchBase(BaseModel):
     username: str | None = None
     first_name: str | None = None
     last_name: str | None = None
-    date_of_birth: Optional[date] = None
-    role: Optional[UserRole] = None
-    is_active: Optional[bool] = None
+    date_of_birth: date| None = None
+
+class UserSearchAdmin(UserSearchBase):
+    email: str | None = None
+    phone_number: str | None = None
+    role: UserRole | None = None
+    is_active: bool | None = None
+
+class UserSearchStaff(UserSearchBase):
+    pass
