@@ -1,12 +1,17 @@
 from decimal import Decimal
 from enum import Enum
 
-from sqlalchemy import Numeric, String
 from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import Base
-from src.utils.model_constants import int_pk, str_20_uix_null_false, created_at, updated_at
+from src.utils.model_constants import (
+    created_at,
+    int_pk,
+    str_20_uix_null_false,
+    updated_at,
+)
 
 
 class RoomType(str, Enum):

@@ -1,33 +1,32 @@
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
-from src.utils.exception_constants import MESSAGE_409_EMAIL, MESSAGE_409_USERNAME
+from src.utils.exception_constants import HTTP409
 
 
-def check_unique_username_error(e):
-    if "ix_users_username" in str(e.orig):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=MESSAGE_409_USERNAME)
-
-
-def check_unique_email_error(e):
-    if "ix_users_email_address" in str(e.orig):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=MESSAGE_409_EMAIL)
-    
 def handle_user_integrity_error(e: IntegrityError) -> None:
     error_str = str(e.orig).lower()
 
     if "username" in error_str:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Username already exists",
+            detail=HTTP409.USERNAME,
         )
     if "email" in error_str:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Email already exists",
+            detail=HTTP409.EMAIL,
         )
     if "phone_number" in error_str:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Phone number already exists",
+            detail=HTTP409.PHONE_NUMBER,
+        )
+    
+
+def check_uq_room_name(e: IntegrityError) -> None:
+    if "ix_room_name" in str(e.orig):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=HTTP409.ROOM_NAME,
         )

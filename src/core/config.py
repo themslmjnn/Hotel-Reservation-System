@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     DB_PSSW: str
     DB_NAME: str
 
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
 

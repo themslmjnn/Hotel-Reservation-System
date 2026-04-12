@@ -66,8 +66,15 @@ class UserResponseAdmin(UserResponseBase):
     is_active: bool
     created_by: int | None = None
 
+class UserResponseStaff(BaseSchema):
+    id: int
+    username: str | None = None
+    first_name: str
+    last_name: str
+    date_of_birth: date
 
-class UserUpdateBase(BaseModel):
+
+class UpdateUserBase(BaseModel):
     username: str | None = Field(min_length=6, max_length=20, default=None)
     first_name: str | None = Field(min_length=2, max_length=20, default=None)
     last_name: str | None = Field(min_length=2, max_length=20, default=None)
@@ -85,14 +92,14 @@ class UserUpdateBase(BaseModel):
     def validate_email(cls, field: str) -> str:
         return validate_email(field)
 
-class UserUpdateAdmin(UserUpdateBase):
+class UpdateUserAdmin(UpdateUserBase):
     role: UserRole | None = None
     is_active: bool | None = None
 
-class UserUpdatePublic(UserUpdateBase):
+class UpdateUserPublic(UpdateUserBase):
     pass
 
-class UserUpdatePasswordAdmin(BaseModel):
+class UpdateUserPasswordAdmin(BaseModel):
     new_password: str = Field(min_length=8)
 
     @field_validator("new_password")
@@ -100,7 +107,7 @@ class UserUpdatePasswordAdmin(BaseModel):
     def validate_password_strength(cls, field: str) -> str:
         return validate_password(field)
     
-class UserUpdatePasswordPublic(BaseModel):
+class UpdateUserPasswordPublic(BaseModel):
     old_password: str
     new_password: str = Field(min_length=8)
 
@@ -110,17 +117,17 @@ class UserUpdatePasswordPublic(BaseModel):
         return validate_password(field)
 
 
-class UserSearchBase(BaseModel):
+class SearchUserBase(BaseModel):
     username: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     date_of_birth: date| None = None
 
-class UserSearchAdmin(UserSearchBase):
+class SearchUserAdmin(SearchUserBase):
     email: str | None = None
     phone_number: str | None = None
     role: UserRole | None = None
     is_active: bool | None = None
 
-class UserSearchStaff(UserSearchBase):
+class SearchUserStaff(SearchUserBase):
     pass

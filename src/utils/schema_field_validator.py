@@ -1,6 +1,6 @@
 from datetime import date
 
-from users.models import UserRole
+from src.users.models import UserRole
 
 
 def validate_password(password: str) -> str:

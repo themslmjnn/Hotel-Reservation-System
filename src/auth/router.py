@@ -12,6 +12,7 @@ from src.auth.schemas import (
 from src.auth.service import AuthService
 from src.core.depedencies import async_db_dependency, current_user_dependency
 
+
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"]

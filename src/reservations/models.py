@@ -54,7 +54,7 @@ class Reservation(Base):
         cascade="all, delete-orphan"
     ) 
 
-    deferred_payment: Mapped["DeferredPayment | None"] = relationship(
+    deferred_payments: Mapped["DeferredPayment | None"] = relationship(
         back_populates="reservation"
     )
 
